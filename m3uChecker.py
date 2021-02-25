@@ -1,7 +1,7 @@
 import requests
 import time
 import os
-
+from multiprocessing import Pool
 def welcome():
     msg = '''
 =========================================================================
@@ -99,7 +99,7 @@ def m3u_load(m3uFile):
         displayMsg('m3u_load', f'{m3uFile} 解析完毕')
         return channel
 
-def work(m3u_data,workname='Default'):
+def work(m3u_data,outputFile,workname='Default'):
     for data in m3u_data:
         txt1 = data.split(',') # 分割节目名称与标签属性
         name = txt1[1] # 电视名称
@@ -114,12 +114,17 @@ def work(m3u_data,workname='Default'):
 
 if __name__ == '__main__':
     print(welcome())
+
     outputFile = 'checkOutput.m3u'
     writeFile(outputFile,'#EXTM3U\n')
-    fileList = m3u_filelist(os.getcwd())
-    for file in fileList:
-        work(m3u_load(file),file)
 
+    fileList = m3u_filelist(os.getcwd())
+    p = Pool(4)
+
+    for file in fileList:
+        p.apply_async(work, args=(m3u_load(file),outputFile,file))
+    p.close()
+    p.join()
 
 
 
