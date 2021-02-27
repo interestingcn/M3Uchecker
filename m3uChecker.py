@@ -63,8 +63,6 @@ def m3u_filelist(path):
     files = []
     for filename in fileList:
         if endWith(filename, '.m3u'):
-            if filename == outputFile:
-                continue
             files.append(filename)  # 所有m3u文件列表
     return files
 
@@ -116,11 +114,16 @@ if __name__ == '__main__':
     print(welcome())
 
     outputFile = 'checkOutput.m3u'
+
+    displayMsg('Master','开始读取文件列表：')
+    fileList = m3u_filelist(os.getcwd())
+    
+    if outputFile in fileList: # 除去输出文件本身
+        fileList.remove(outputFile)
+
     writeFile(outputFile,'#EXTM3U\n')
 
-    fileList = m3u_filelist(os.getcwd())
     p = Pool(4)
-
     for file in fileList:
         p.apply_async(work, args=(m3u_load(file),outputFile,file))
     p.close()
